@@ -11,10 +11,7 @@ import com.bdawg.metalbgp.unifi.sync.UnifiConfigPull
 import java.io.File
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
-import kotlinx.cli.ArgParser
-import kotlinx.cli.ArgType
-import kotlinx.cli.default
-import kotlinx.cli.multiple
+import kotlinx.cli.*
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 
@@ -83,15 +80,6 @@ class App(val config: MetalUnfiBgpSyncConfig) {
 
 fun main(args: Array<String>) {
   val parser = ArgParser("metal-unifi-bgp-sync")
-  val localAsns by
-      parser
-          .option(
-              ArgType.String,
-              shortName = "a",
-              description =
-                  "MetalASN - MetalBGP ASNs to sync - optional. Otherwise all discovered ASNs will be used",
-              fullName = "asn")
-          .multiple()
   val dryRun by
       parser
           .option(
@@ -101,7 +89,7 @@ fun main(args: Array<String>) {
           .default(true)
   val kubeConfigPath by
       parser
-          .option(ArgType.String, shortName = "c", description = "Kube config path")
+          .option(ArgType.String, shortName = "k", description = "Kube config path")
           .default(System.getenv("HOME") + "/.kube/config")
   val speakerDaemonSetName by
       parser
@@ -111,6 +99,38 @@ fun main(args: Array<String>) {
       parser
           .option(ArgType.String, shortName = "m", description = "MetalLB namespace")
           .default("metallb-system")
+  val unifiControllerIp by
+      parser
+          .option(ArgType.String, shortName = "c", description = "Controller IP address")
+          .required()
+  val unifiOsProxy by
+      parser
+          .option(
+              ArgType.Boolean,
+              shortName = "p",
+              description =
+                  "If your controller runs on UnifiOS and needs the proxy prefix (UDMP, CloudKey, etc)")
+          .default(true)
+  val unifiSiteName by
+      parser
+          .option(ArgType.String, shortName = "sn", description = "Unifi site name")
+          .default("default")
+  val unifiControllerUsername by
+      parser
+          .option(ArgType.String, shortName = "cu", description = "Unifi controller username")
+          .required()
+  val unifiControllerPassword by
+      parser
+          .option(ArgType.String, shortName = "cp", description = "Unifi controller password")
+          .required()
+  val unifiSshUsername by
+      parser
+          .option(ArgType.String, shortName = "sshu", description = "Unifi ssh username")
+          .required()
+  val unifiSshPassword by
+      parser
+          .option(ArgType.String, shortName = "sshp", description = "Unifi ssh password")
+          .required()
   parser.parse(args)
 
   val config =
@@ -121,13 +141,13 @@ fun main(args: Array<String>) {
                   speakerDaemonSetName = speakerDaemonSetName, metalNamespace = metalNamespace),
           unifiConfig =
               UnifiControllerConfig(
-                  controllerIp = "",
-                  unifiOsProxy = true,
-                  unifiUsername = "",
-                  unifiPassowrd = "",
-                  siteName = "default",
-                  unifiSshUsername = "",
-                  unifiSshPassword = ""),
+                  controllerIp = unifiControllerIp,
+                  unifiOsProxy = unifiOsProxy,
+                  unifiUsername = unifiControllerUsername,
+                  unifiPassowrd = unifiControllerPassword,
+                  siteName = unifiSiteName,
+                  unifiSshUsername = unifiSshUsername,
+                  unifiSshPassword = unifiSshPassword),
           dryRun = dryRun)
   val app = App(config)
   val result = runBlocking { app.run() }
