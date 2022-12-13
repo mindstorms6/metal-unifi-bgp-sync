@@ -4,8 +4,8 @@
 package com.bdawg.metalbgp
 
 import com.bdawg.metalbgp.fetcher.MetalFetcher
-import com.bdawg.metalbgp.unifi.UnifiProvisioner
-import com.bdawg.metalbgp.unifi.UnifiSnippetEmitter
+import com.bdawg.metalbgp.unifi.provision.UnifiProvisioner
+import com.bdawg.metalbgp.unifi.provision.UnifiSnippetEmitter
 import kotlinx.cli.ArgParser
 import kotlinx.cli.ArgType
 import kotlinx.cli.default
@@ -20,6 +20,9 @@ data class UnifiControllerConfig(
     val unifiOsProxy: Boolean,
     val unifiUsername: String,
     val unifiPassowrd: String,
+    val unifiSshUsername: String,
+    val unifiSshPassword: String,
+    val unifiConfigLocation: String = "/srv/unifi/data/sites/default/config.gateway.json",
     val siteName: String
 )
 
@@ -86,7 +89,9 @@ class App(val args: Array<String>) {
                     unifiOsProxy = true,
                     unifiUsername = "",
                     unifiPassowrd = "",
-                    siteName = "default"),
+                    siteName = "default",
+                    unifiSshUsername = "",
+                    unifiSshPassword = ""),
             dryRun = dryRun)
 
     logger.info { "Fetching metal data from k8s" }
@@ -99,6 +104,9 @@ class App(val args: Array<String>) {
       val mergedUnifiJson = UnifiSnippetEmitter(it.value).buildUnifiJsonSnippet()
       logger.debug { "UnifiJson: $mergedUnifiJson" }
       // TODO: save the unifi json to controller
+      //  UnifiConfigPull(config).getConfig()
+      // merge
+      // UnifiConfigPull(config).putConfig(merged)
       UnifiProvisioner(config).doProvision(it.key)
     }
   }

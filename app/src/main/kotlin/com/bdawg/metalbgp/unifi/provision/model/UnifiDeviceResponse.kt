@@ -1,4 +1,4 @@
-package com.bdawg.metalbgp.unifi.model
+package com.bdawg.metalbgp.unifi.provision.model
 
 data class UnifiDeviceResponse(val data: List<UnifiDevice>)
 

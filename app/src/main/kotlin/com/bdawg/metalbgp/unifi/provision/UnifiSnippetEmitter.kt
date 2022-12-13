@@ -1,4 +1,4 @@
-package com.bdawg.metalbgp.unifi
+package com.bdawg.metalbgp.unifi.provision
 
 import com.bdawg.metalbgp.fetcher.model.MetalBGPState
 import com.google.gson.Gson

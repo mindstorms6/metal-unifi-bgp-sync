@@ -1,8 +1,8 @@
-package com.bdawg.metalbgp.unifi
+package com.bdawg.metalbgp.unifi.provision
 
 import com.bdawg.metalbgp.MetalUnfiBgpSyncConfig
-import com.bdawg.metalbgp.unifi.model.ProvisionResponse
-import com.bdawg.metalbgp.unifi.model.UnifiDeviceResponse
+import com.bdawg.metalbgp.unifi.provision.model.ProvisionResponse
+import com.bdawg.metalbgp.unifi.provision.model.UnifiDeviceResponse
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.engine.cio.*
@@ -11,7 +11,6 @@ import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.plugins.cookies.*
 import io.ktor.client.plugins.logging.*
 import io.ktor.client.request.*
-import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.serialization.gson.*
 import io.ktor.util.*
