@@ -104,4 +104,5 @@ testing {
 application {
   // Define the main class for the application.
   mainClass.set("com.bdawg.metalbgp.AppKt")
+  applicationName = "metal-unifi-bgp-sync"
 }
