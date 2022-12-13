@@ -43,7 +43,7 @@ configure<com.diffplug.gradle.spotless.SpotlessExtension> {
   kotlin {
     // by default the target is every '.kt' and '.kts` file in the java sourcesets
     ktfmt() // has its own section below
-    ktlint() // has its own section below
+    //    ktlint() // has its own section below
     //        diktat()   // has its own section below
     //        prettier() // has its own section below
   }
@@ -53,6 +53,8 @@ configure<com.diffplug.gradle.spotless.SpotlessExtension> {
     ktfmt()
   }
 }
+
+val ktor_version = "2.2.1"
 
 dependencies {
   // Align versions of all Kotlin components
@@ -70,8 +72,18 @@ dependencies {
 
   implementation("com.google.code.gson:gson:2.10") { because("Emit JSON snippet for unifi") }
 
-  // This dependency is used by the application.
-  implementation("com.google.guava:guava:31.0.1-jre")
+  implementation("io.ktor:ktor-client-core:$ktor_version") {
+    because("Honestly working with the Java URL HTTP stuff is just yucky. ")
+  }
+  implementation("io.ktor:ktor-client-cio:$ktor_version") { because("Its easy enough") }
+  implementation("io.ktor:ktor-client-content-negotiation:$ktor_version") {
+    because("Easy serialization w/ ktor")
+  }
+  implementation("io.ktor:ktor-serialization-gson:$ktor_version") { because("GSON KTOR serialize") }
+  implementation("io.ktor:ktor-client-logging:$ktor_version") { because("Log stuff in client") }
+
+  implementation("io.github.microutils:kotlin-logging-jvm:3.0.4") { because("Kotlin logs!") }
+  implementation("org.slf4j:slf4j-simple:2.0.3") { because("Kotlin logs! But the actual logger") }
 }
 
 testing {
