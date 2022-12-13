@@ -6,6 +6,11 @@ package com.bdawg.metalbgp
 import com.bdawg.metalbgp.fetcher.MetalFetcher
 import com.bdawg.metalbgp.unifi.provision.UnifiProvisioner
 import com.bdawg.metalbgp.unifi.provision.UnifiSnippetEmitter
+import com.bdawg.metalbgp.unifi.sync.UnifiConfigMerger
+import com.bdawg.metalbgp.unifi.sync.UnifiConfigPull
+import java.io.File
+import java.nio.charset.StandardCharsets
+import java.nio.file.Files
 import kotlinx.cli.ArgParser
 import kotlinx.cli.ArgType
 import kotlinx.cli.default
@@ -33,7 +38,7 @@ data class MetalUnfiBgpSyncConfig(
     val dryRun: Boolean
 )
 
-class App(val args: Array<String>) {
+class App(val config: MetalUnfiBgpSyncConfig) {
   private val logger = KotlinLogging.logger {}
 
   /**
@@ -46,54 +51,6 @@ class App(val args: Array<String>) {
    * - Initiate a provision for the router
    */
   suspend fun run() {
-    val parser = ArgParser("metal-unifi-bgp-sync")
-    val localAsns by
-        parser
-            .option(
-                ArgType.String,
-                shortName = "a",
-                description =
-                    "MetalASN - MetalBGP ASNs to sync - optional. Otherwise all discovered ASNs will be used",
-                fullName = "asn")
-            .multiple()
-    val dryRun by
-        parser
-            .option(
-                ArgType.Boolean,
-                shortName = "d",
-                description = "Turn off dry run mode [ default dry run ]")
-            .default(true)
-    val kubeConfigPath by
-        parser
-            .option(ArgType.String, shortName = "c", description = "Kube config path")
-            .default(System.getenv("HOME") + "/.kube/config")
-    val speakerDaemonSetName by
-        parser
-            .option(ArgType.String, shortName = "s", description = "Speaker daemon set name")
-            .default("speaker")
-    val metalNamespace by
-        parser
-            .option(ArgType.String, shortName = "m", description = "MetalLB namespace")
-            .default("metallb-system")
-    parser.parse(args)
-
-    val config =
-        MetalUnfiBgpSyncConfig(
-            kubeConfigPath = kubeConfigPath,
-            metalConfig =
-                MetalConfig(
-                    speakerDaemonSetName = speakerDaemonSetName, metalNamespace = metalNamespace),
-            unifiConfig =
-                UnifiControllerConfig(
-                    controllerIp = "",
-                    unifiOsProxy = true,
-                    unifiUsername = "",
-                    unifiPassowrd = "",
-                    siteName = "default",
-                    unifiSshUsername = "",
-                    unifiSshPassword = ""),
-            dryRun = dryRun)
-
     logger.info { "Fetching metal data from k8s" }
     val metalConfigs = MetalFetcher(config).fetch()
     logger.info { "Fetched ${metalConfigs.size} metal configs from k8s" }
@@ -101,18 +58,77 @@ class App(val args: Array<String>) {
     logger.info { "There are  ${metalConfigsByRouter.size} metal configs by router" }
     metalConfigsByRouter.forEach {
       logger.info { "Updating router at ${it.key} with new metal config" }
-      val mergedUnifiJson = UnifiSnippetEmitter(it.value).buildUnifiJsonSnippet()
-      logger.debug { "UnifiJson: $mergedUnifiJson" }
-      // TODO: save the unifi json to controller
-      //  UnifiConfigPull(config).getConfig()
-      // merge
-      // UnifiConfigPull(config).putConfig(merged)
-      UnifiProvisioner(config).doProvision(it.key)
+      val metalUnifiJson = UnifiSnippetEmitter(it.value).buildUnifiJsonSnippet()
+      logger.debug { "Metal Unifi json: $metalUnifiJson" }
+      val controllerConfig = UnifiConfigPull(config).getControllerConfig()
+      val controllerConfigJson =
+          String(Files.readAllBytes(controllerConfig.toPath()), StandardCharsets.UTF_8)
+      val mergedWithController = UnifiConfigMerger().merge(metalUnifiJson, controllerConfigJson)
+      logger.info { "Merged controller config: ${mergedWithController}" }
+      if (!config.dryRun) {
+        logger.info { "Not a dry run - pushing new config" }
+        val mergedJsonFile = File.createTempFile("merge-unifi", "json")
+        Files.write(
+            mergedJsonFile.toPath(), mergedWithController.toByteArray(StandardCharsets.UTF_8))
+        UnifiConfigPull(config).putControllerConfig(mergedJsonFile)
+        logger.info { "Persisted new config to controller - provisioning router" }
+        UnifiProvisioner(config).doProvision(it.key)
+        logger.info { "Done - Provision completed successfully. I love you." }
+      } else {
+        logger.info { "Dry run mode - nothing to do. I still love you though." }
+      }
     }
   }
 }
 
 fun main(args: Array<String>) {
-  val app = App(args)
+  val parser = ArgParser("metal-unifi-bgp-sync")
+  val localAsns by
+      parser
+          .option(
+              ArgType.String,
+              shortName = "a",
+              description =
+                  "MetalASN - MetalBGP ASNs to sync - optional. Otherwise all discovered ASNs will be used",
+              fullName = "asn")
+          .multiple()
+  val dryRun by
+      parser
+          .option(
+              ArgType.Boolean,
+              shortName = "d",
+              description = "Turn off dry run mode [ default dry run ]")
+          .default(true)
+  val kubeConfigPath by
+      parser
+          .option(ArgType.String, shortName = "c", description = "Kube config path")
+          .default(System.getenv("HOME") + "/.kube/config")
+  val speakerDaemonSetName by
+      parser
+          .option(ArgType.String, shortName = "s", description = "Speaker daemon set name")
+          .default("speaker")
+  val metalNamespace by
+      parser
+          .option(ArgType.String, shortName = "m", description = "MetalLB namespace")
+          .default("metallb-system")
+  parser.parse(args)
+
+  val config =
+      MetalUnfiBgpSyncConfig(
+          kubeConfigPath = kubeConfigPath,
+          metalConfig =
+              MetalConfig(
+                  speakerDaemonSetName = speakerDaemonSetName, metalNamespace = metalNamespace),
+          unifiConfig =
+              UnifiControllerConfig(
+                  controllerIp = "",
+                  unifiOsProxy = true,
+                  unifiUsername = "",
+                  unifiPassowrd = "",
+                  siteName = "default",
+                  unifiSshUsername = "",
+                  unifiSshPassword = ""),
+          dryRun = dryRun)
+  val app = App(config)
   val result = runBlocking { app.run() }
 }

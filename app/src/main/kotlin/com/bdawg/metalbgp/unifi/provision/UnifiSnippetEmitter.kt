@@ -1,6 +1,7 @@
 package com.bdawg.metalbgp.unifi.provision
 
 import com.bdawg.metalbgp.fetcher.model.MetalBGPState
+import com.bdawg.metalbgp.unifi.sync.UnifiConfigMerger
 import com.google.gson.Gson
 import com.google.gson.JsonObject
 import com.google.gson.JsonPrimitive
@@ -11,8 +12,9 @@ class UnifiSnippetEmitter(private val metalBGPState: List<MetalBGPState>) {
   /**
    * Emit the Unifi BGP json snippet
    *
-   * Looks similar to: <pre> { "protocols": {
-   * ```
+   * Looks similar to: <pre>
+   * ```json
+   * { "protocols": {
    *       "bgp": {
    *           "64501": {
    *               "neighbor": {
@@ -25,8 +27,9 @@ class UnifiSnippetEmitter(private val metalBGPState: List<MetalBGPState>) {
    *               }
    *           }
    *       }
+   * } }
+   * ```</pre>
    * ```
-   * } } </pre>
    */
   fun buildUnifiJsonSnippet(): String {
     // its fine enough to be multiple ASNs (router side) - but this is going to a specific router -
@@ -53,8 +56,8 @@ class UnifiSnippetEmitter(private val metalBGPState: List<MetalBGPState>) {
     val protocols = JsonObject()
     val root = JsonObject()
 
-    root.add("protocols", protocols)
-    protocols.add("bgp", bgp)
+    root.add(UnifiConfigMerger.PROTOCOLS, protocols)
+    protocols.add(UnifiConfigMerger.BGP, bgp)
 
     return Gson().toJson(root)
   }

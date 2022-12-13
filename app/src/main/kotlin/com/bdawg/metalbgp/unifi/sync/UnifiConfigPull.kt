@@ -2,17 +2,18 @@ package com.bdawg.metalbgp.unifi.sync
 
 import com.bdawg.metalbgp.MetalUnfiBgpSyncConfig
 import java.io.File
+import java.util.UUID
 import net.schmizz.sshj.SSHClient
 import net.schmizz.sshj.xfer.FileSystemFile
 
 class UnifiConfigPull(private val config: MetalUnfiBgpSyncConfig) {
-  fun getConfig(): File {
+  fun getControllerConfig(): File {
     val ssh = SSHClient()
     ssh.loadKnownHosts()
     ssh.connect(config.unifiConfig.controllerIp)
     try {
       ssh.authPassword(config.unifiConfig.unifiSshUsername, config.unifiConfig.unifiSshPassword)
-      val path = "/tmp/config.json"
+      val path = "/tmp/${UUID.randomUUID().toString()}-config.gateway.json"
       ssh.newSCPFileTransfer()
           .download(config.unifiConfig.unifiConfigLocation, FileSystemFile(path))
       return File(path)
@@ -21,7 +22,7 @@ class UnifiConfigPull(private val config: MetalUnfiBgpSyncConfig) {
     }
   }
 
-  fun putConfig(localFile: File) {
+  fun putControllerConfig(localFile: File) {
     val ssh = SSHClient()
     ssh.loadKnownHosts()
     ssh.connect(config.unifiConfig.controllerIp)
