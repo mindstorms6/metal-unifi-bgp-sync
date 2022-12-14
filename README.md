@@ -39,7 +39,7 @@ spec:
             imagePullPolicy: Always
             env:
               - name: UNIFI_CONTROLLER_IP
-                value: 192.168.0.185
+                value: 192.168.X.X
               - name: UNIFI_CONTROLLER_USERNAME
                 valueFrom:
                   secretKeyRef:
