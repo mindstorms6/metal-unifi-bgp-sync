@@ -64,7 +64,7 @@ class App(val config: MetalUnfiBgpSyncConfig) {
           String(Files.readAllBytes(controllerConfig.toPath()), StandardCharsets.UTF_8)
       logger.info { "Current controller config: $controllerConfigJson" }
       val mergedWithController = UnifiConfigMerger().merge(metalUnifiJson, controllerConfigJson)
-      logger.info { "Merged controller config: $mergedWithController" }
+      logger.info { "Merged controller config: ${mergedWithController.mergedString}" }
       val mergedJsonFile = File.createTempFile("merge-unifi", "json")
       Files.write(
           mergedJsonFile.toPath(),
