@@ -110,6 +110,12 @@ roleRef:
   name: clusterrole:bgpsync
 ```
 
+### Configuration params:
+
+At the moment the env vars can be found in the `App.kt` file:
+
+https://github.com/mindstorms6/metal-unifi-bgp-sync/blob/main/app/src/main/kotlin/com/bdawg/metalbgp/App.kt#L90-L155
+
 ## Dev
 
 ### Generate new models for metal:
