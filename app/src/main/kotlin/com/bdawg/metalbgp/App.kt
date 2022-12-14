@@ -66,17 +66,21 @@ class App(val config: MetalUnfiBgpSyncConfig) {
       val mergedWithController = UnifiConfigMerger().merge(metalUnifiJson, controllerConfigJson)
       logger.info { "Merged controller config: $mergedWithController" }
       val mergedJsonFile = File.createTempFile("merge-unifi", "json")
-      Files.write(mergedJsonFile.toPath(), mergedWithController.toByteArray(StandardCharsets.UTF_8))
-      if (!config.dryRun) {
+      Files.write(
+          mergedJsonFile.toPath(),
+          mergedWithController.mergedString.toByteArray(StandardCharsets.UTF_8))
+      logger.info {
+        "Controller ${if (mergedWithController.needsUpdate) { "does" } else { "does NOT " }} need an update"
+      }
+      if (!config.dryRun && mergedWithController.needsUpdate) {
         logger.info { "Not a dry run - pushing new config" }
         UnifiConfigPull(config).putControllerConfig(mergedJsonFile)
         logger.info { "Persisted new config to controller - provisioning router" }
         UnifiProvisioner(config).doProvision(it.key)
         logger.info { "Done - Provision completed successfully. I love you." }
       } else {
-
         logger.info {
-          "Dry run mode - nothing to do. Wrote new merged config to ${mergedJsonFile.absolutePath} . I still love you though."
+          "Dry run mode or no changes - nothing to do. Wrote new merged config to ${mergedJsonFile.absolutePath} . I still love you though."
         }
       }
     }
