@@ -17,7 +17,98 @@ High level flow:
 4. If there's a diff between the controllers current state and the newly updated one, push the new config to the unifi controller
 5. Ask the controller to provision the new config (if applicable)
 
+## Example as a cron
 
+```yaml
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: bgpsync-job
+spec:
+  schedule: "0 * * * *"
+  concurrencyPolicy: "Replace"
+  jobTemplate:
+    spec:
+      ttlSecondsAfterFinished: 1800
+      template:
+        spec:
+          serviceAccountName: bgpsync
+          containers:
+          - name: bgpsync
+            image: ghcr.io/mindstorms6/metal-unifi-bgp-sync:main
+            imagePullPolicy: Always
+            env:
+              - name: UNIFI_CONTROLLER_IP
+                value: 192.168.0.185
+              - name: UNIFI_CONTROLLER_USERNAME
+                valueFrom:
+                  secretKeyRef:
+                    name: bgpsyncsecret
+                    key: unifi-controller-username
+                    optional: false
+              - name: UNIFI_SSH_USERNAME
+                valueFrom:
+                  secretKeyRef:
+                    name: bgpsyncsecret
+                    key: unifi-ssh-username
+                    optional: false
+              - name: UNIFI_CONTROLLER_PASSWORD
+                valueFrom:
+                  secretKeyRef:
+                    name: bgpsyncsecret
+                    key: unifi-controller-password
+                    optional: false
+              - name: UNIFI_SSH_PASSWORD
+                valueFrom:
+                  secretKeyRef:
+                    name: bgpsyncsecret
+                    key: unifi-ssh-password
+                    optional: false
+              - name: DRY_RUN
+                value: "true" # change as necessary
+          restartPolicy: Never
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: bgpsync
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  # "namespace" omitted since ClusterRoles are not namespaced
+  name: clusterrole:bgpsync
+rules:
+- apiGroups: [""]
+  #
+  # at the HTTP level, the name of the resource for accessing Secret
+  # objects is "secrets"
+  resources: ["daemonsets","pods"]
+  verbs: ["get", "watch", "list"]
+- apiGroups: ["apps"]
+  #
+  # at the HTTP level, the name of the resource for accessing Secret
+  # objects is "secrets"
+  resources: ["daemonsets"]
+  verbs: ["get", "watch", "list"]
+- apiGroups: ["metallb.io"]
+  resources: ["*"]
+  verbs: ["list","get"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+# This cluster role binding allows anyone in the "manager" group to read secrets in any namespace.
+kind: ClusterRoleBinding
+metadata:
+  name: bgpsync
+subjects:
+- kind: ServiceAccount
+  name: bgpsync
+  namespace: bgpsync
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: clusterrole:bgpsync
+```
 
 ## Dev
 
