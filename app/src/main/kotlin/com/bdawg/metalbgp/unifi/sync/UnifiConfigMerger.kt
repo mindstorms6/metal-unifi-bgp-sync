@@ -15,7 +15,7 @@ class UnifiConfigMerger {
   }
 
   fun merge(local: String, remote: String): String {
-    val gson = Gson()
+    val gson = Gson().newBuilder().setPrettyPrinting().disableHtmlEscaping().create()
     return gson.toJson(
         merge(
             gson.fromJson(local, JsonObject::class.java),

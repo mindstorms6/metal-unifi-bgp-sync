@@ -48,7 +48,9 @@ class App(val config: MetalUnfiBgpSyncConfig) {
    * - Initiate a provision for the router
    */
   suspend fun run() {
-    logger.info { "Fetching metal data from k8s" }
+    logger.info {
+      "Fetching metal data from k8s - NS is ${config.metalConfig.metalNamespace} - DS is ${config.metalConfig.speakerDaemonSetName}"
+    }
     val metalConfigs = MetalFetcher(config).fetch()
     logger.info { "Fetched ${metalConfigs.size} metal configs from k8s" }
     val metalConfigsByRouter = metalConfigs.groupBy { it.routerAddress }
