@@ -83,29 +83,32 @@ class App(val config: MetalUnfiBgpSyncConfig) {
 
 fun main(args: Array<String>) {
   val parser = ArgParser("metal-unifi-bgp-sync")
+  val envVars = System.getenv()
   val dryRun by
       parser
           .option(
               ArgType.Boolean,
               shortName = "d",
               description = "Turn off dry run mode [ default dry run ]")
-          .default(true)
+          .default((envVars.getOrDefault("DRY_RUN", "true").toBoolean()))
   val kubeConfigPath by
       parser
           .option(ArgType.String, shortName = "k", description = "Kube config path")
-          .default(System.getenv("HOME") + "/.kube/config")
+          .default(
+              envVars.getOrDefault("KUBE_CONFIG_PATH", System.getenv("HOME") + "/.kube/config"))
   val speakerDaemonSetName by
       parser
           .option(ArgType.String, shortName = "s", description = "Speaker daemon set name")
-          .default("speaker")
+          .default(envVars.getOrDefault("SPEAKER_DAEMON_SET_NAME", "speaker"))
   val metalNamespace by
       parser
           .option(ArgType.String, shortName = "m", description = "MetalLB namespace")
-          .default("metallb-system")
+          .default(envVars.getOrDefault("METAL_NAMESPACE", "metallb-system"))
   val unifiControllerIp by
       parser
           .option(ArgType.String, shortName = "c", description = "Controller IP address")
-          .required()
+          .default(envVars.getOrDefault("UNIFI_CONTROLLER_IP", null))
+
   val unifiOsProxy by
       parser
           .option(
@@ -113,29 +116,44 @@ fun main(args: Array<String>) {
               shortName = "p",
               description =
                   "If your controller runs on UnifiOS and needs the proxy prefix (UDMP, CloudKey, etc)")
-          .default(true)
+          .default(envVars.getOrDefault("UNIFI_PROXY", "true").toBoolean())
   val unifiSiteName by
       parser
           .option(ArgType.String, shortName = "sn", description = "Unifi site name")
-          .default("default")
+          .default(envVars.getOrDefault("UNIFI_SITE_NAME", "default"))
   val unifiControllerUsername by
       parser
           .option(ArgType.String, shortName = "cu", description = "Unifi controller username")
-          .required()
+          .default(envVars.getOrDefault("UNIFI_CONTROLLER_USERNAME", null))
   val unifiControllerPassword by
       parser
           .option(ArgType.String, shortName = "cp", description = "Unifi controller password")
-          .required()
+          .default(envVars.getOrDefault("UNIFI_CONTROLLER_PASSWORD", null))
   val unifiSshUsername by
       parser
           .option(ArgType.String, shortName = "sshu", description = "Unifi ssh username")
-          .required()
+          .default(envVars.getOrDefault("UNIFI_SSH_USERNAME", null))
   val unifiSshPassword by
       parser
           .option(ArgType.String, shortName = "sshp", description = "Unifi ssh password")
-          .required()
+          .default(envVars.getOrDefault("UNIFI_SSH_PASSWORD", null))
   parser.parse(args)
 
+  if (unifiControllerIp == null) {
+    throw IllegalArgumentException("Unifi controller ip cannot be null")
+  }
+  if (unifiControllerUsername == null) {
+    throw IllegalArgumentException("Unifi controller username cannot be null")
+  }
+  if (unifiControllerPassword == null) {
+    throw IllegalArgumentException("Unifi controller password cannot be null")
+  }
+  if (unifiSshUsername == null) {
+    throw IllegalArgumentException("Unifi ssh username cannot be null")
+  }
+  if (unifiSshPassword == null) {
+    throw IllegalArgumentException("Unifi ssh password cannot be null")
+  }
   val config =
       MetalUnfiBgpSyncConfig(
           kubeConfigPath = kubeConfigPath,
