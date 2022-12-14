@@ -24,7 +24,7 @@ data class UnifiControllerConfig(
     val unifiPassowrd: String,
     val unifiSshUsername: String,
     val unifiSshPassword: String,
-    val unifiConfigLocation: String = "/srv/unifi/data/sites/default/config.gateway.json",
+    val unifiConfigLocation: String,
     val siteName: String
 )
 
@@ -143,6 +143,15 @@ fun main(args: Array<String>) {
       parser
           .option(ArgType.String, shortName = "sshp", description = "Unifi ssh password")
           .default(envVars.getOrDefault("UNIFI_SSH_PASSWORD", null))
+  val unifiConfigLocation by
+      parser
+          .option(
+              ArgType.String,
+              shortName = "ucl",
+              description = "Where on the controller to put the merged config file")
+          .default(
+              envVars.getOrDefault(
+                  "UNIFI_CONFIG_LOCATION", "/srv/unifi/data/sites/default/config.gateway.json"))
   parser.parse(args)
 
   if (unifiControllerIp == null) {
@@ -174,7 +183,8 @@ fun main(args: Array<String>) {
                   unifiPassowrd = unifiControllerPassword,
                   siteName = unifiSiteName,
                   unifiSshUsername = unifiSshUsername,
-                  unifiSshPassword = unifiSshPassword),
+                  unifiSshPassword = unifiSshPassword,
+                  unifiConfigLocation = unifiConfigLocation),
           dryRun = dryRun)
   val app = App(config)
   val result = runBlocking { app.run() }
