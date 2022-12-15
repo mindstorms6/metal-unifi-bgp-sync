@@ -85,7 +85,7 @@ dependencies {
   implementation("io.github.microutils:kotlin-logging-jvm:3.0.4") { because("Kotlin logs!") }
   implementation("org.slf4j:slf4j-simple:2.0.3") { because("Kotlin logs! But the actual logger") }
 
-  implementation("com.hierynomus:sshj:0.32.0") {
+  implementation("com.hierynomus:sshj:0.34.0") {
     because("Try to pull and push data over ssh to unifi controller")
   }
 }
