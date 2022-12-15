@@ -9,7 +9,7 @@
 
 plugins {
   // Apply the org.jetbrains.kotlin.jvm Plugin to add support for Kotlin.
-  id("org.jetbrains.kotlin.jvm") version "1.6.21"
+  id("org.jetbrains.kotlin.jvm") version "1.7.22"
   // Formatting
   id("com.diffplug.spotless") version "6.12.0"
 
@@ -64,7 +64,7 @@ dependencies {
   implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
 
   implementation("io.kubernetes:client-java:17.0.0") { because("Kubernetes interactions") }
-  implementation("io.kubernetes:client-java-extended:15.0.1") {
+  implementation("io.kubernetes:client-java-extended:17.0.0") {
     because("Java kubectl equivalent commands - easier to deal with")
   }
 
@@ -83,9 +83,9 @@ dependencies {
   implementation("io.ktor:ktor-client-logging:$ktor_version") { because("Log stuff in client") }
 
   implementation("io.github.microutils:kotlin-logging-jvm:3.0.4") { because("Kotlin logs!") }
-  implementation("org.slf4j:slf4j-simple:2.0.3") { because("Kotlin logs! But the actual logger") }
+  implementation("org.slf4j:slf4j-simple:2.0.6") { because("Kotlin logs! But the actual logger") }
 
-  implementation("com.hierynomus:sshj:0.32.0") {
+  implementation("com.hierynomus:sshj:0.34.0") {
     because("Try to pull and push data over ssh to unifi controller")
   }
 }
