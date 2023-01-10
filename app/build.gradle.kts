@@ -70,7 +70,7 @@ dependencies {
 
   implementation("org.jetbrains.kotlinx:kotlinx-cli:0.3.5") { because("Parse cli arguments") }
 
-  implementation("com.google.code.gson:gson:2.10") { because("Emit JSON snippet for unifi") }
+  implementation("com.google.code.gson:gson:2.10.1") { because("Emit JSON snippet for unifi") }
 
   implementation("io.ktor:ktor-client-core:$ktor_version") {
     because("Honestly working with the Java URL HTTP stuff is just yucky. ")
