@@ -82,7 +82,7 @@ dependencies {
   implementation("io.ktor:ktor-serialization-gson:$ktor_version") { because("GSON KTOR serialize") }
   implementation("io.ktor:ktor-client-logging:$ktor_version") { because("Log stuff in client") }
 
-  implementation("io.github.microutils:kotlin-logging-jvm:3.0.4") { because("Kotlin logs!") }
+  implementation("io.github.microutils:kotlin-logging-jvm:3.0.5") { because("Kotlin logs!") }
   implementation("org.slf4j:slf4j-simple:2.0.6") { because("Kotlin logs! But the actual logger") }
 
   implementation("com.hierynomus:sshj:0.35.0") {
