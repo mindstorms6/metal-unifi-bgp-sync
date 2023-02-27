@@ -64,7 +64,7 @@ dependencies {
   implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
 
   implementation("io.kubernetes:client-java:17.0.1") { because("Kubernetes interactions") }
-  implementation("io.kubernetes:client-java-extended:17.0.0") {
+  implementation("io.kubernetes:client-java-extended:17.0.1") {
     because("Java kubectl equivalent commands - easier to deal with")
   }
 
