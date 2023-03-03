@@ -63,8 +63,8 @@ dependencies {
   // Use the Kotlin JDK 8 standard library.
   implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
 
-  implementation("io.kubernetes:client-java:17.0.1") { because("Kubernetes interactions") }
-  implementation("io.kubernetes:client-java-extended:17.0.1") {
+  implementation("io.kubernetes:client-java:18.0.0") { because("Kubernetes interactions") }
+  implementation("io.kubernetes:client-java-extended:18.0.0") {
     because("Java kubectl equivalent commands - easier to deal with")
   }
 
