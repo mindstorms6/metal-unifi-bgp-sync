@@ -54,7 +54,7 @@ configure<com.diffplug.gradle.spotless.SpotlessExtension> {
   }
 }
 
-val ktor_version = "2.2.4"
+val ktor_version = "2.3.1"
 
 dependencies {
   // Align versions of all Kotlin components
