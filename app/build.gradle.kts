@@ -11,7 +11,7 @@ plugins {
   // Apply the org.jetbrains.kotlin.jvm Plugin to add support for Kotlin.
   id("org.jetbrains.kotlin.jvm") version "1.8.10"
   // Formatting
-  id("com.diffplug.spotless") version "6.15.0"
+  id("com.diffplug.spotless") version "6.19.0"
 
   // Apply the application plugin to add support for building a CLI application in Java.
   application
@@ -54,7 +54,7 @@ configure<com.diffplug.gradle.spotless.SpotlessExtension> {
   }
 }
 
-val ktor_version = "2.2.3"
+val ktor_version = "2.2.4"
 
 dependencies {
   // Align versions of all Kotlin components
@@ -63,7 +63,8 @@ dependencies {
   // Use the Kotlin JDK 8 standard library.
   implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
 
-  implementation("io.kubernetes:client-java:17.0.1") { because("Kubernetes interactions") }
+
+  implementation("io.kubernetes:client-java:18.0.0") { because("Kubernetes interactions") }
   implementation("io.kubernetes:client-java-extended:18.0.0") {
     because("Java kubectl equivalent commands - easier to deal with")
   }
@@ -83,7 +84,7 @@ dependencies {
   implementation("io.ktor:ktor-client-logging:$ktor_version") { because("Log stuff in client") }
 
   implementation("io.github.microutils:kotlin-logging-jvm:3.0.5") { because("Kotlin logs!") }
-  implementation("org.slf4j:slf4j-simple:2.0.6") { because("Kotlin logs! But the actual logger") }
+  implementation("org.slf4j:slf4j-simple:2.0.7") { because("Kotlin logs! But the actual logger") }
 
   implementation("com.hierynomus:sshj:0.35.0") {
     because("Try to pull and push data over ssh to unifi controller")
