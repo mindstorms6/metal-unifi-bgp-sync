@@ -11,7 +11,7 @@ plugins {
   // Apply the org.jetbrains.kotlin.jvm Plugin to add support for Kotlin.
   id("org.jetbrains.kotlin.jvm") version "1.8.22"
   // Formatting
-  id("com.diffplug.spotless") version "6.19.0"
+  id("com.diffplug.spotless") version "6.20.0"
 
   // Apply the application plugin to add support for building a CLI application in Java.
   application
